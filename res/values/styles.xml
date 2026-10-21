@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="HomeTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@color/backdrop_placeholder</item>
+        <item name="android:colorBackground">@color/backdrop_placeholder</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:fontFamily">@font/inter</item>
+    </style>
+
+    <style name="MenuAction">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/menu_item</item>
+        <item name="android:focusable">true</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingTop">11dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingBottom">11dp</item>
+        <item name="android:textColor">@color/menu_text</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="HeroAction">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:background">@drawable/hero_action</item>
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textColor">@color/hero_action_text</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="HeroMeta">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:shadowColor">#99000000</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">4</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+</resources>

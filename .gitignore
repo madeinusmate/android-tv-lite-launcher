@@ -1,0 +1,17 @@
+# Build output
+/build/
+*.apk
+*.idsig
+
+# Signing (use your own debug or release keystore locally)
+debug.keystore
+*.jks
+*.keystore
+
+# TMDB key — copy from tmdb.xml.example
+res/values/tmdb.xml
+
+# OS / IDE
+.DS_Store
+.idea/
+*.iml
