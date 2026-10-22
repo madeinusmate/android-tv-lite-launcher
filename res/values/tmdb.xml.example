@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Copy this file to tmdb.xml and paste your TMDB API v3 key (https://www.themoviedb.org/settings/api). -->
-    <string name="tmdb_api_key" translatable="false">YOUR_TMDB_API_KEY</string>
-</resources>

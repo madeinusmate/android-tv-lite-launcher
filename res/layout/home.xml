@@ -54,6 +54,18 @@
         android:paddingEnd="48dp">
 
         <TextView
+            android:id="@+id/cover"
+            style="@style/HeroAction"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/cover_chip"
+            android:nextFocusDown="@id/settings"
+            android:nextFocusLeft="@id/cover"
+            android:nextFocusRight="@id/cover"
+            android:nextFocusUp="@id/cover"
+            android:text="Turn on Home cover"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/show_title"
             android:layout_width="720dp"
             android:layout_height="wrap_content"

@@ -3,6 +3,7 @@ package dev.litehome;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.net.Uri;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -64,6 +65,7 @@ public final class HomeActivity extends Activity {
     private TextView clock;
     private ImageView store;
     private ImageView settings;
+    private TextView cover;
     private FrameLayout dockHost;
     private HorizontalScrollView scroller;
     private LinearLayout apps;
@@ -121,6 +123,9 @@ public final class HomeActivity extends Activity {
     private int favBannerToken;
     private boolean paging;
     private boolean onMore;
+    private int coverStep = LauncherCover.READY;
+    private boolean coverReturn;
+    private ContentObserver keyboardWatch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +139,8 @@ public final class HomeActivity extends Activity {
                 v.animate().scaleX(hasFocus ? 1.2f : 1f).scaleY(hasFocus ? 1.2f : 1f).setDuration(160).start());
         dockHost = findViewById(R.id.dock_host);
         settings.setOnClickListener(v -> startActivity(settingsIntent()));
+        cover = findViewById(R.id.cover);
+        cover.setOnClickListener(v -> openCoverStep());
         settings.setOnFocusChangeListener((v, hasFocus) ->
                 v.animate().scaleX(hasFocus ? 1.2f : 1f).scaleY(hasFocus ? 1.2f : 1f).setDuration(160).start());
         scroller = findViewById(R.id.scroller);
@@ -197,11 +204,36 @@ public final class HomeActivity extends Activity {
         heroPrev.setOnHoverListener(transportHover);
         heroNext.setOnHoverListener(transportHover);
         heroRing.setOnHoverListener(transportHover);
+        if (getIntent().getBooleanExtra(LauncherCover.EXTRA_COVER, false)) {
+            overridePendingTransition(0, 0);
+        }
+        keyboardWatch = ScreenKeyboard.watch(this);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent.getBooleanExtra(LauncherCover.EXTRA_COVER, false)) {
+            coverReturn = apps != null && apps.getChildCount() > 0;
+            overridePendingTransition(0, 0);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        ScreenKeyboard.pin(this);
+        if (coverReturn) {
+            coverReturn = false;
+            if (onMore && favouriteTile != null) {
+                favouriteTile.post(favouriteTile::requestFocus);
+            } else if (shownImage != null) {
+                armAdvance();
+            }
+            refreshCover();
+            return;
+        }
         catalog.refresh();
         bindApps();
         bindStore();
@@ -210,6 +242,7 @@ public final class HomeActivity extends Activity {
         } else if (shownImage != null) {
             armAdvance();
         }
+        refreshCover();
     }
 
     @Override
@@ -256,6 +289,9 @@ public final class HomeActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (keyboardWatch != null) {
+            getContentResolver().unregisterContentObserver(keyboardWatch);
+        }
         catalog.shutdown();
         backdropHandler.removeCallbacksAndMessages(null);
         clock.removeCallbacks(tick);
@@ -321,6 +357,17 @@ public final class HomeActivity extends Activity {
             focusLeadingHeroAction();
             return true;
         }
+        if (cover.getVisibility() == View.VISIBLE && cover.hasFocus()) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                settings.requestFocus();
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+                    || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                    || keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                return true;
+            }
+        }
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             View first = apps.getChildCount() > 0 ? apps.getChildAt(0) : null;
             if (first != null && !first.hasFocus()) {
@@ -339,8 +386,13 @@ public final class HomeActivity extends Activity {
             return true;
         }
         if ((keyCode == KeyEvent.KEYCODE_DPAD_LEFT && store.hasFocus())
-                || (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && settings.hasFocus())
-                || (keyCode == KeyEvent.KEYCODE_DPAD_UP && (settings.hasFocus() || store.hasFocus()))) {
+                || (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && settings.hasFocus())) {
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP && (settings.hasFocus() || store.hasFocus())) {
+            if (cover.getVisibility() == View.VISIBLE) {
+                cover.requestFocus();
+            }
             return true;
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP && (watch.hasFocus() || trailer.hasFocus())) {
@@ -366,6 +418,7 @@ public final class HomeActivity extends Activity {
             return true;
         }
         if (keyCode == KeyEvent.KEYCODE_MENU
+                && !cover.hasFocus()
                 && !settings.hasFocus()
                 && !store.hasFocus()
                 && !watch.hasFocus()
@@ -1001,6 +1054,36 @@ public final class HomeActivity extends Activity {
 
     private static Intent settingsIntent() {
         return new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    }
+
+    private void refreshCover() {
+        int step = LauncherCover.step(this);
+        boolean show = step != LauncherCover.READY;
+        boolean changed = step != coverStep;
+        coverStep = step;
+        cover.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (!show) {
+            return;
+        }
+        cover.setText(LauncherCover.stepLabel(step));
+        if (changed) {
+            cover.post(cover::requestFocus);
+        }
+    }
+
+    private void openCoverStep() {
+        Intent intent = LauncherCover.stepIntent(this);
+        if (intent == null) {
+            return;
+        }
+        try {
+            startActivity(intent);
+        } catch (RuntimeException ignored) {
+            String message = LauncherCover.step(this) == LauncherCover.SWITCH_HOME
+                    ? "Open Settings and choose Google TV as the home app"
+                    : "Open Settings, then Accessibility, and turn on Home cover";
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        }
     }
 
 
